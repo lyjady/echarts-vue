@@ -11,6 +11,10 @@ const routes = [
   {
     path: '/trendPage',
     component: () => import('../views/TrendPage')
+  },
+  {
+    path: '/mapPage',
+    component: () => import('../views/MapPage')
   }
 ]
 
