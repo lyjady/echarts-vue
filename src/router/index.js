@@ -19,6 +19,10 @@ const routes = [
   {
     path: '/rankPage',
     component: () => import('../views/RankPage')
+  },
+  {
+    path: '/hotProduct',
+    component: () => import('../views/HotProduct')
   }
 ]
 
