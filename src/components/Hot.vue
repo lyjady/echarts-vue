@@ -13,11 +13,16 @@ export default {
     return {
       chartsInstance: null,
       data: null,
-      currentIndex: 0
+      currentIndex: 0,
+      fontSize: 0
     }
   },
   mounted() {
     this.initCharts()
+    this.screenAdapter()
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.screenAdapter)
   },
   methods: {
     initCharts() {
@@ -66,6 +71,7 @@ export default {
         ]
       }
       this.chartsInstance.setOption(initOption)
+      window.addEventListener('resize', () => this.screenAdapter())
       this.getData()
     },
     getData() {
@@ -97,7 +103,31 @@ export default {
       }
       this.chartsInstance.setOption(dataOption)
     },
-    screenAdapter() {},
+    screenAdapter() {
+      this.fontSize = this.$refs.hotRef.offsetWidth / 100 * 3.6
+      const adapterOption = {
+        title: {
+          fontSize: this.fontSize
+        },
+        legend: {
+          itemWidth: this.fontSize,
+          itemHeight: this.fontSize,
+          itemGap: this.fontSize / 2,
+          textStyle: {
+            fontSize: this.fontSize / 2
+          }
+        },
+        series: [
+          {
+            radius: this.fontSize * 4.5,
+            center: ['50%', '60%']
+          }
+        ]
+      }
+      this.chartsInstance.setOption(adapterOption)
+      this.chartsInstance.resize()
+
+    },
     prev() {
       this.currentIndex--
       if (this.currentIndex < 0) {

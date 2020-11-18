@@ -23,6 +23,10 @@ const routes = [
   {
     path: '/hotProduct',
     component: () => import('../views/HotProduct')
+  },
+  {
+    path: '/stockPage',
+    component: () => import('../views/StockPage')
   }
 ]
 
