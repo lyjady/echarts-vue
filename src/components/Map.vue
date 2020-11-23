@@ -18,13 +18,23 @@ export default {
       provinceData: {}
     }
   },
+  created() {
+    this.$socket.registerCallbackMapping('mapData', this.getData)
+  },
   mounted() {
     this.initChart()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'mapData',
+      chartName: 'map',
+      value: ''
+    })
     window.addEventListener('resize', () => this.screenAdapter())
     this.screenAdapter()
   },
   destroyed() {
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('mapData')
   },
   methods: {
     async initChart() {
@@ -57,32 +67,34 @@ export default {
       this.chartInstance.on('click', arg => this.clickProvince(arg))
       await this.getData()
     },
-    async getData() {
-      const {data} = await this.$http.get('map')
-      this.data = data
+    getData(res) {
+      console.log(res)
+      this.data = res
       this.updateChart()
     },
     updateChart() {
-      const legend = this.data.map(item => item.name)
-      const series = this.data.map(item => {
-        return {
-          type: 'effectScatter',
-          rippleEffect: {
-            scale: 5,
-            brushStyle: 'stroke'
+      if (this.data) {
+        const legend = this.data.map(item => item.name)
+        const series = this.data.map(item => {
+          return {
+            type: 'effectScatter',
+            rippleEffect: {
+              scale: 5,
+              brushStyle: 'stroke'
+            },
+            name: item.name,
+            data: item.children,
+            coordinateSystem: 'geo'
+          }
+        })
+        const dataOption = {
+          legend: {
+            data: legend
           },
-          name: item.name,
-          data: item.children,
-          coordinateSystem: 'geo'
+          series
         }
-      })
-      const dataOption = {
-        legend: {
-          data: legend
-        },
-        series
+        this.chartInstance.setOption(dataOption)
       }
-      this.chartInstance.setOption(dataOption)
     },
     screenAdapter() {
       const fontSize = this.$refs.mapRef.offsetWidth / 100 * 3.6

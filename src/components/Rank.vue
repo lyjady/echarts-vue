@@ -18,12 +18,23 @@ export default {
       endValue: 9
     }
   },
+  created() {
+    this.$socket.registerCallbackMapping('rankData', this.getData)
+  },
   mounted() {
     this.initCharts()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'rankData',
+      chartName: 'rank',
+      value: ''
+    })
+    this.startInternal()
     addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
   destroyed() {
+    this.unRegisterCallBack('rankData')
     removeEventListener('resize', this.screenAdapter)
     clearInterval(this.timer)
   },
@@ -91,16 +102,12 @@ export default {
         ]
       }
       this.chartsInstance.setOption(initOption)
-      this.getData()
+
     },
-    getData() {
-      this.$http.get('rank').then(response => {
-        if (response.status === 200) {
-          this.data = response.data
-          this.updateData()
-          this.startInternal()
-        }
-      })
+    getData(res) {
+      console.log(res)
+      this.data = res
+      this.updateData()
     },
     updateData() {
       this.data = this.data.sort((o1, o2) => o2.value - o1.value)
@@ -130,7 +137,7 @@ export default {
           {
             barWidth: offsetWidth,
             itemStyle: {
-              barBorderRadius: [offsetWidth / 2, offsetWidth / 2, 0 ,0]
+              barBorderRadius: [offsetWidth / 2, offsetWidth / 2, 0, 0]
             }
           }
         ]

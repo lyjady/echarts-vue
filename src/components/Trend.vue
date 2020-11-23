@@ -25,11 +25,23 @@ export default {
       fontSize: 0,
     }
   },
+  created() {
+    this.$socket.registerCallbackMapping('trendData', this.getData)
+  },
   mounted() {
     this.initCharts()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'trendData',
+      chartName: 'trend',
+      value: ''
+    })
     window.addEventListener('resize', () => this.screenAdapter())
     this.screenAdapter()
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('trendData')
   },
   computed: {
     selectTypes() {
@@ -86,9 +98,8 @@ export default {
       }
       this.chartsInstance.setOption(initOption)
     },
-    async getData() {
-      const {data} = await this.$http.get('trend')
-      this.data = data
+    async getData(res) {
+      this.data = res
       this.updateData()
     },
     updateData()  {

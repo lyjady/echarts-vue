@@ -17,12 +17,22 @@ export default {
       fontSize: 0
     }
   },
+  created() {
+    this.$socket.registerCallbackMapping('hotData', this.getData)
+  },
   mounted() {
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'hotData',
+      chartName: 'hotproduct',
+      value: ''
+    })
     this.initCharts()
     this.screenAdapter()
   },
   destroyed() {
     window.removeEventListener('resize', this.screenAdapter)
+    this.unRegisterCallBack('mapData')
   },
   methods: {
     initCharts() {
@@ -34,7 +44,7 @@ export default {
           top: 20
         },
         legend: {
-          top: '5%',
+          top: '15%',
           icon: 'circle'
         },
         tooltip: {
@@ -74,34 +84,33 @@ export default {
       window.addEventListener('resize', () => this.screenAdapter())
       this.getData()
     },
-    getData() {
-      this.$http.get('hotproduct').then(response => {
-        if (response.status === 200) {
-          this.data = response.data
-          this.updateData()
-        }
-      })
+    getData(res) {
+      this.data = res
+      this.updateData()
     },
     updateData() {
-      const legends = this.data[this.currentIndex].children.map(item => item.name)
-      const showData = this.data[this.currentIndex].children.map(item => {
-        return {
-          name: item.name,
-          value: item.value,
-          children: item.children
-        }
-      })
-      const dataOption = {
-        legend: {
-          data: legends
-        },
-        series: [
-          {
-            data: showData
+      if (this.data) {
+        const legends = this.data[this.currentIndex].children.map(item => item.name)
+        const showData = this.data[this.currentIndex].children.map(item => {
+          return {
+            name: item.name,
+            value: item.value,
+            children: item.children
           }
-        ]
+        })
+        const dataOption = {
+          legend: {
+            data: legends
+          },
+          series: [
+            {
+              data: showData
+            }
+          ]
+        }
+        this.chartsInstance.setOption(dataOption)
       }
-      this.chartsInstance.setOption(dataOption)
+
     },
     screenAdapter() {
       this.fontSize = this.$refs.hotRef.offsetWidth / 100 * 3.6

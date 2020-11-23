@@ -6,6 +6,9 @@ import router from '@/router';
 import '@/assets/css/global.less'
 import '../public/static/theme/chalk'
 import './assets/font/iconfont.css'
+import WebsocketServer from '@/service/websocket_service';
+WebsocketServer.Instance.connect()
+Vue.prototype.$socket = WebsocketServer.Instance
 
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api'
 

@@ -15,11 +15,23 @@ export default {
       timer: null
     }
   },
+  created() {
+    this.$socket.registerCallbackMapping('stockData', this.getData)
+  },
   mounted() {
     this.initCharts()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'stockData',
+      chartName: 'stock',
+      value: ''
+    })
+    this.screenAdapter()
+    this.startInterval()
     addEventListener('resize', this.screenAdapter)
   },
   destroyed() {
+    this.$socket.unRegisterCallBack('stockData')
     clearInterval(this.timer)
     removeEventListener('resize', this.screenAdapter)
   },
@@ -36,16 +48,10 @@ export default {
       this.chartsInstance.setOption(initOption)
       this.chartsInstance.on('mouseover', () => clearInterval(this.timer))
       this.chartsInstance.on('mouseout', () => this.startInterval())
-      this.getData()
     },
-    getData() {
-      this.$http.get('stock').then(response => {
-        if (response.status === 200) {
-          this.data = response.data
-          this.updateData()
-          this.startInterval()
-        }
-      })
+    getData(res) {
+      this.data = res
+      this.updateData()
     },
     updateData() {
       const centerArr = [
@@ -67,7 +73,6 @@ export default {
       const seriesData = this.data.slice(start, end).map((item, index) => {
         return {
           type: 'pie',
-          radius: [110, 100],
           center: centerArr[index],
           hoverAnimation: false,
           labelLine: {
@@ -109,7 +114,55 @@ export default {
       this.chartsInstance.setOption(updateOption)
     },
     screenAdapter() {
-
+      const titleFontSize = this.$refs.stockRef.offsetWidth / 100 * 3.6
+      const innerRadius = titleFontSize * 2.8
+      const outterRadius = innerRadius * 1.125
+      const adapterOption = {
+        title: {
+          textStyle: {
+            fontSize: titleFontSize
+          }
+        },
+        series: [
+          {
+            type: 'pie',
+            radius: [outterRadius, innerRadius],
+            label: {
+              fontSize: titleFontSize / 2
+            }
+          },
+          {
+            type: 'pie',
+            radius: [outterRadius, innerRadius],
+            label: {
+              fontSize: titleFontSize / 2
+            }
+          },
+          {
+            type: 'pie',
+            radius: [outterRadius, innerRadius],
+            label: {
+              fontSize: titleFontSize / 2
+            }
+          },
+          {
+            type: 'pie',
+            radius: [outterRadius, innerRadius],
+            label: {
+              fontSize: titleFontSize / 2
+            }
+          },
+          {
+            type: 'pie',
+            radius: [outterRadius, innerRadius],
+            label: {
+              fontSize: titleFontSize / 2
+            }
+          }
+        ]
+      }
+      this.chartsInstance.setOption(adapterOption)
+      this.chartsInstance.resize()
     },
     startInterval() {
       if (this.timer) {
